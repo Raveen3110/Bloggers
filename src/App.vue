@@ -39,7 +39,7 @@
           </template>
           <div class="text-center menu-items" style="background-color: #808080">
             <v-avatar color="black">gg</v-avatar>
-            <p class="my-1 white--text">{{email}}</p>
+            <p class="my-1 white--text">{{ email }}</p>
             <hr />
             <v-list-item
               @click="logout"
@@ -61,6 +61,7 @@
         <createpost
           v-bind:dialog="dialogValueCreate"
           v-on:changevalue="valueCreateUpdate($event)"
+          ref="postdata"
         />
         <modal
           v-bind:dialog="dialogValue"
@@ -113,7 +114,7 @@ export default {
       succcesColor: "",
       SnackbarValue: false,
       username: localStorage.getItem("name"),
-      email:localStorage.getItem("email")
+      email: localStorage.getItem("email"),
     };
   },
 
@@ -126,9 +127,20 @@ export default {
     eventBus.$on("refresh", () => {
       this.CheckedLogIn();
     });
+    eventBus.$on("openDialogBox", (t, d) => {
+      // console.log("titlee checkingg",t)
+      // console.log("dess checkingg",d)
+      this.dialogBox(t, d);
+    });
   },
 
   methods: {
+    dialogBox(title, desc) {
+      this.dialogValueCreate = true;
+      this.$refs.postdata.CreatePost.bodypost = desc;
+      this.$refs.postdata.CreatePost.title = title;
+      this.$refs.postdata.CreatePost.id = this.$route.params.id;
+    },
     CheckedLogIn() {
       this.username = localStorage.getItem("name");
     },
@@ -147,7 +159,7 @@ export default {
       localStorage.removeItem("name");
       localStorage.removeItem("access");
       this.username = localStorage.getItem("name");
-      eventBus.$emit('refresh')
+      eventBus.$emit("refresh");
       // this.SnackbarValue = true;
       // this.succcesMessage.push("You have successfully logged out!");
       // this.succcesColor = "success";

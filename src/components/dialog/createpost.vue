@@ -10,7 +10,7 @@
           >
         </v-card-title>
         <v-card-text class="create-inner">
-          <v-form @submit.prevent="postSubmit" ref="formreset">
+          <v-form @submit.prevent="postSubmit">
             <div class="inner-part">
               <label class="white--text">Title</label>
               <v-text-field
@@ -35,21 +35,41 @@
               >
             </div>
             <v-card-actions class="footer flex">
-              <v-btn
-                small
-                class="btn-style white--text"
-                elevation="8"
-                type="submit"
-              >
-                Submit
-                <v-progress-circular
-                  v-if="signupLoader"
-                  indeterminate
-                  color="white"
-                  size="10"
-                  width="2"
-                />
-              </v-btn>
+              <div v-if="CreatePost.id == null">
+                <v-btn
+                  small
+                  class="btn-style white--text"
+                  elevation="8"
+                  type="submit"
+                >
+                  Submit
+                  <v-progress-circular
+                    v-if="signupLoader"
+                    indeterminate
+                    color="white"
+                    size="10"
+                    width="2"
+                  />
+                </v-btn>
+              </div>
+
+              <div v-else>
+                <v-btn
+                  small
+                  class="btn-style white--text"
+                  elevation="8"
+                  type="submit"
+                >
+                  Updated
+                  <v-progress-circular
+                    v-if="signupLoader"
+                    indeterminate
+                    color="white"
+                    size="10"
+                    width="2"
+                  />
+                </v-btn>
+              </div>
             </v-card-actions>
           </v-form>
         </v-card-text>
@@ -63,7 +83,7 @@ import VueAxios from "vue-axios";
 import axios from "axios";
 import API_BASE from "../../config/api";
 import { VueEditor } from "vue2-editor";
-import { eventBus } from "../../main"
+import { eventBus } from "../../main";
 Vue.use(VueAxios, axios);
 
 export default {
@@ -71,8 +91,22 @@ export default {
   props: {
     dialog: Boolean,
   },
+  mounted() {
+    eventBus.$on("refreshForToken", () => {
+      this.getToken();
+    });
+  },
   methods: {
+    getToken() {
+      this.token = localStorage.getItem("access");
+    },
     modalclosed() {
+      setTimeout(() => {
+        console.log("null valuee");
+        this.CreatePost.title = "";
+        this.CreatePost.bodypost = "";
+        this.CreatePost.id = null;
+      }, 500);
       this.$emit("changevalue", false);
       this.signIn = false;
     },
@@ -82,7 +116,11 @@ export default {
         title: this.CreatePost.title,
         description: this.CreatePost.bodypost,
       };
-      if (this.CreatePost.title && this.CreatePost.bodypost) {
+      if (
+        this.CreatePost.title &&
+        this.CreatePost.bodypost &&
+        this.CreatePost.id == null
+      ) {
         this.signupLoader = true;
         // console.log("Api calling::::::::::header", headers);
         Vue.axios
@@ -91,13 +129,18 @@ export default {
           })
           .then((response) => {
             console.log("succes", response.data);
-            this.$refs.formreset.reset();
+            // this.$refs.formreset.reset();
             this.signupLoader = false;
             eventBus.$emit("refreshList");
             this.modalclosed();
+            // setTimeout(() => {
+            // this.title = null;
+            // this.bodypost = null;
+            // }, 500);
           })
           .catch((error) => {
             console.log("Error:::::::::::::", error.response.data.detail);
+            this.signupLoader = false;
           });
       }
       if (!this.CreatePost.bodypost) {
@@ -105,6 +148,26 @@ export default {
       }
       if (!this.CreatePost.title) {
         console.log("title is req");
+      }
+
+      // Updating APIs
+      if (this.CreatePost.id !== null) {
+        this.signupLoader = true;
+        console.log("updatinggg idd---",this.CreatePost.id);
+        Vue.axios
+          .put(API_BASE + "blogs/" + this.CreatePost.id, body, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("access")}` },
+          })
+          .then((response) => {
+            console.log("Updatedddddd:::::", response);
+            this.signupLoader = false;
+            eventBus.$emit("refreshList");
+            this.modalclosed();
+          })
+          .catch((error) => {
+            console.log("Error:::::::::::::", error);
+            this.signupLoader = false;
+          });
       }
     },
   },
@@ -117,8 +180,8 @@ export default {
       CreatePost: {
         title: null,
         bodypost: null,
+        id: null,
       },
-      token: localStorage.getItem("access"),
       titleRules: [
         (v) => !!v || "Title is required",
         (v) => v.length >= 10 || "Title must be more than 10 characters",

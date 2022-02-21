@@ -10,7 +10,7 @@
           >
         </v-card-title>
         <v-card-text class="create-inner">
-          <v-form @submit.prevent="addcomment" ref="formreset">
+          <v-form @submit.prevent="addcomment">
             <div class="inner-part">
               <label class="white--text">Comments</label>
               <vue-editor
@@ -19,22 +19,42 @@
               ></vue-editor>
             </div>
             <v-card-actions class="footer flex">
-              <v-btn
-                small
-                class="btn-style white--text"
-                elevation="8"
-                type="submit"
-              >
-                <v-icon size="12">mdi-plus</v-icon>
-                Add
-                <v-progress-circular
-                  v-if="Loader"
-                  indeterminate
-                  color="white"
-                  size="10"
-                  width="2"
-                />
-              </v-btn>
+              <div v-if="CreatePost.id == null">
+                <v-btn
+                  small
+                  class="btn-style white--text"
+                  elevation="8"
+                  type="submit"
+                >
+                  <v-icon size="12">mdi-plus</v-icon>
+                  Add
+                  <v-progress-circular
+                    v-if="Loader"
+                    indeterminate
+                    color="white"
+                    size="10"
+                    width="2"
+                  />
+                </v-btn>
+              </div>
+
+              <div v-else>
+                <v-btn
+                  small
+                  class="btn-style white--text"
+                  elevation="8"
+                  type="submit"
+                >
+                  Update Comment
+                  <v-progress-circular
+                    v-if="Loader"
+                    indeterminate
+                    color="white"
+                    size="10"
+                    width="2"
+                  />
+                </v-btn>
+              </div>
             </v-card-actions>
           </v-form>
         </v-card-text>
@@ -56,68 +76,76 @@ export default {
   props: {
     dialog: Boolean,
   },
-  // props:['dialog'],
+  components: { VueEditor },
 
-  components: {
-    VueEditor,
-  },
   data() {
     return {
       CreatePost: {
         bodypost: "",
-        // bodypost:"ertywuidocfvygvdcbnjk",
         token: localStorage.getItem("access"),
+        id: null,
       },
       Loader: false,
-     
     };
   },
-  
-  // mounted(){
-  //    if(comments){
-  //       this.bodypost=comments
-  //     }
-  // },
+
   methods: {
     modalclosed() {
+      setTimeout(() => {
+        this.CreatePost.bodypost = "";
+        this.CreatePost.id = null;
+      }, 100);
       this.$emit("changevalue", false);
-      //   this.signIn = false;
     },
 
     addcomment() {
-      console.log("Commentss titlee::::", this.CreatePost.bodypost);
-      console.log("tokennnn::::", localStorage.getItem("access"));
-
       const body = {
         description: this.CreatePost.bodypost,
       };
+      if (!this.CreatePost.id) {
+        this.Loader = true;
 
-      this.Loader = true;
-      Vue.axios
-        .post(
-          API_BASE + "blogs/" + this.$route.params.id + "/comments/",
-          body,
-          {
+        Vue.axios
+          .post(
+            API_BASE + "blogs/" + this.$route.params.id + "/comments/",
+            body,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("access")}`,
+              },
+            }
+          )
+          .then((response) => {
+            console.log("succes", response.data);
+            this.Loader = false;
+            eventBus.$emit("refreshList");
+            this.modalclosed();
+          })
+          .catch((error) => {
+            console.log("Error:::::::::::::", error.response.data.detail);
+            this.Loader = false;
+          });
+      }
+      // Editing Commentss
+      else {
+        this.Loader = true;
+        Vue.axios
+          .put(API_BASE + "blogs/comment/" + this.CreatePost.id + "/", body, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("access")}`,
             },
-          }
-        )
-        .then((response) => {
-          console.log("succes", response.data);
-          this.$refs.formreset.reset();
-          this.Loader = false;
-          eventBus.$emit("refreshList");
-          this.modalclosed()    
-        })
-        .catch((error) => {
-          console.log("Error:::::::::::::", error.response.data.detail);
-          this.$refs.formreset.reset();
-          this.Loader = false;
-
-        });
-      //   this.$refs.formreset.reset();
-      //   this.modalclosed();
+          })
+          .then((response) => {
+            console.log("succes", response.data);
+            this.Loader = false;
+            eventBus.$emit("refreshList");
+            this.modalclosed();
+          })
+          .catch((error) => {
+            console.log("Error:::::::::::::", error);
+            this.Loader = false;
+          });
+      }
     },
   },
 };

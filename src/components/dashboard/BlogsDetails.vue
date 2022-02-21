@@ -17,7 +17,9 @@
       <div class="contain-head" style="display: flex">
         {{ blogsView.title }}
         <v-spacer />
-        <v-icon @click="EditPost" class="icons" color="white" size="22"
+        <v-icon
+         v-if="blogsId == LogUserId"
+         @click="EditPost(blogsView.title,blogsView.description)" class="icons" color="white" size="22"
           >mdi-pencil</v-icon
         >
       </div>
@@ -39,7 +41,7 @@
     <addcomment
       v-bind:dialog="dialogValueCreate"
       v-on:changevalue="valueCreateUpdate($event)"
-      refs="commentsRef"
+      ref="commentsRef"
     />
 
     <v-card
@@ -52,7 +54,7 @@
         <v-spacer />
         <span v-if="item.posted_by_details.id == LogUserId">
           <v-icon
-            @click="EditComment(item.description)"
+            @click="EditComment(item.description , item.id)"
             class="icons"
             color="white"
             size="22"
@@ -113,9 +115,8 @@ export default {
       CheckLog: "",
       CommentsByUser: [],
       username: localStorage.getItem("name"),
+      commentData:"",
       token: localStorage.getItem("access"),
-      commentData:""
-      // header:{}
     };
   },
   created() {
@@ -124,10 +125,12 @@ export default {
 
     eventBus.$on("refreshList", () => {
       this.Addcomment();
+      this.Details()
     });
     eventBus.$on("refresh", () => {
       this.CheckedLogIn();
       this.CheckedUserID();
+      this.getToken();
     });
   },
 
@@ -138,6 +141,9 @@ export default {
     CheckedUserID() {
       this.LogUserId = localStorage.getItem("id");
     },
+    getToken(){
+      this.token= localStorage.getItem("access");
+    },
     valueCreateUpdate(e) {
       this.dialogValueCreate = e;
     },
@@ -145,7 +151,7 @@ export default {
       Vue.axios
         .get(API_BASE + "blogs/" + this.$route.params.id)
         .then((response) => {
-          console.log("Blogss Detailsss", response.data.posted_by_details.id);
+          // console.log("Blogss Detailsss", response.data.posted_by_details.id);
           this.blogsView = response.data;
           this.blogsId = response.data.posted_by_details.id;
         })
@@ -159,7 +165,7 @@ export default {
           API_BASE + "blogs/" + this.$route.params.id + "/comments/?page=" + 1
         )
         .then((response) => {
-          console.log("Commentssss", response.data.results);
+          // console.log("Commentssss", response.data.results);
           this.CommentsByUser = response.data.results;
           // eventBus.$emit('refresh')
           this.modalclosed();
@@ -183,17 +189,12 @@ export default {
         });
     },
 
-    EditPost() {
-      Vue.axios
-        .put(API_BASE + "blogs/" + this.$route.params.id, {
-          headers: { Authorization: `Bearer ${this.token}` },
-        })
-        .then((response) => {
-          console.log("Updatedddddd:::::", response);
-        })
-        .catch((error) => {
-          console.log("Error:::::::::::::", error);
-        });
+    EditPost(title,desc) {
+       eventBus.$emit('openDialogBox',title,desc)
+       eventBus.$emit('refreshForToken')
+       console.log("titlee",title)
+       console.log("descriptionn",desc)
+     
     },
     Deletecomment(id) {
       Vue.axios
@@ -208,13 +209,15 @@ export default {
           console.log("Error:::::::::::::", error);
         });
     },
-    EditComment(id) {
-      // console.log("Commentss id", data);
-      console.log("Commentss id", this.$refs.commentsRef);
-      this.dialogValueCreate = true;
+    EditComment(desc,id) {
+      console.log("Commentss Description", desc); 
+      console.log("Commentss current ", id); 
 
-      this.commentData=id
-      // this.$ref.commentsRef.CreatePost.bodypost=data;
+      this.dialogValueCreate = true;
+      this.$refs.commentsRef.CreatePost.bodypost=desc;
+      this.$refs.commentsRef.CreatePost.id=id;
+
+      // this.$refs.commentsRef.CreatePost.bodypost=desc;
     },
   },
 };
