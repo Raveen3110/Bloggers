@@ -8,8 +8,8 @@
       tile
     >
       <!-- <h1>qwe{{ username }}</h1> -->
-      <v-toolbar color="black" height="80px">
-        <v-toolbar-title>
+      <v-toolbar color="black" height="80px" class="fixed-bar">
+        <v-toolbar-title @click="gohome">
           <v-img
             class="logo"
             src="@/assets/Log1.png"
@@ -68,18 +68,6 @@
           v-on:changevalue="valueUpdate($event)"
           v-on:LogInUsername="UserName($event)"
         />
-        <!--
-          
-          @reload="CheckedLogIn"
-          
-          
-           <snackbar
-          v-bind:SnackbarValue="SnackbarHandler"
-          :SnackbarMessage="succcesMessage"
-          :SnackbarHandler="SnackbarValue"
-          :succcesColor="succcesColor"
-          :timeout="timeout"
-        /> -->
       </v-toolbar>
       <v-main>
         <router-view />
@@ -92,44 +80,32 @@
 import Createpost from "./components/dialog/createpost.vue";
 import modal from "./components/dialog/modal";
 import { eventBus } from "./main";
-// import Snackbar from "./helper/Snackbar.vue";
 
 export default {
   // username : localStorage.getItem('name'),
 
   components: {
-    // test,
     modal,
     Createpost,
-    // Snackbar,
   },
   name: "App",
   data() {
     return {
-      SnackbarHandler: false,
       timeout: 5000,
       dialogValue: false,
       dialogValueCreate: false,
       succcesMessage: [],
       succcesColor: "",
-      SnackbarValue: false,
       username: localStorage.getItem("name"),
       email: localStorage.getItem("email"),
     };
   },
 
-  // created() {
-  //   this.username = localStorage.getItem("name");
-  //   // console.log(this.$root.$refs, "uehdeh");
-  //   this.$root.$refs.appvue = this;
-  // },
   mounted() {
     eventBus.$on("refresh", () => {
       this.CheckedLogIn();
     });
     eventBus.$on("openDialogBox", (t, d) => {
-      // console.log("titlee checkingg",t)
-      // console.log("dess checkingg",d)
       this.dialogBox(t, d);
     });
   },
@@ -141,8 +117,12 @@ export default {
       this.$refs.postdata.CreatePost.title = title;
       this.$refs.postdata.CreatePost.id = this.$route.params.id;
     },
+    gohome() {
+      this.$router.push({ name: "Home" });
+    },
     CheckedLogIn() {
       this.username = localStorage.getItem("name");
+      this.email = localStorage.getItem("email");
     },
     valueUpdate(e) {
       this.dialogValue = e;
@@ -160,9 +140,6 @@ export default {
       localStorage.removeItem("access");
       this.username = localStorage.getItem("name");
       eventBus.$emit("refresh");
-      // this.SnackbarValue = true;
-      // this.succcesMessage.push("You have successfully logged out!");
-      // this.succcesColor = "success";
     },
   },
 };
@@ -170,6 +147,12 @@ export default {
 <style scoped>
 * {
   font-family: "Baloo Bhai\ 2", cursive;
+}
+.fixed-bar {
+  position: sticky;
+  position: -webkit-sticky; /* for Safari */
+  top: 0;
+  z-index: 2;
 }
 .btn-style {
   color: white !important;
@@ -186,6 +169,7 @@ export default {
 @media screen and (min-width: 600px) {
   .logo {
     margin-left: 40px !important ;
+    cursor: pointer;
   }
   .btn-style {
     margin-right: 40px;
@@ -198,6 +182,7 @@ export default {
     padding-left: 0px !important;
     height: 30px !important;
     width: 150px !important;
+    cursor: pointer;
   }
   .btn-style {
     color: white !important;

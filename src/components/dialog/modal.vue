@@ -35,12 +35,7 @@
               <span style="color: red; font-size: 16px"
                 >Please check the following errors</span
               >
-              <snackbar
-                :SnackbarMessage="LogIn.error"
-                :SnackbarHandler="SnackbarValue"
-              />
-              <!-- v-bind:SnackbarHandler="SnackbarValue" -->
-
+          
               <ul>
                 <li
                   style="color: red; font-size: 14px"
@@ -118,12 +113,7 @@
               <span style="color: red; font-size: 16px"
                 >Please check the following errors</span
               >
-              <snackbar
-                :SnackbarMessage="Register.error"
-                :SnackbarHandler="SnackbarValue"
-              />
-              <!-- v-bind:SnackbarHandler="SnackbarValue" -->
-
+            
               <ul>
                 <li
                   style="color: red; font-size: 14px"
@@ -216,21 +206,12 @@
         </v-form>
         <!------------- SignIn Form End--------------->
       </v-card>
-      <!-- <snackbar
-        :SnackbarMessage="Apierrormessage"
-        :SnackbarHandler="SnackbarValue"
-      />
-      <snackbar
-        :SnackbarMessage="succcesMessage"
-        :SnackbarHandler="SnackbarValue"
-        :succcesColor="succcesColor"
-      /> -->
+    
     </v-dialog>
   </div>
 </template>
 
 <script>
-// import Snackbar from "../../helper/Snackbar.vue";
 import Vue from "vue";
 import VueAxios from "vue-axios";
 import axios from "axios";
@@ -239,7 +220,6 @@ import { eventBus } from '../../main';
 Vue.use(VueAxios, axios);
 
 export default {
-  // components: { Snackbar },
   name: "modal",
   props: {
     dialog: Boolean,
@@ -255,23 +235,18 @@ export default {
       this.Register.errors = [];
       if (!this.SignUp.username) {
         // this.Register.errors.push(Name);
-        this.SnackbarValue = true;
       }
       if (!this.SignUp.email) {
         this.Register.errors.push("Email is Required");
-        this.SnackbarValue = true;
       }
       if (!this.SignUp.password) {
         this.Register.errors.push("Password is Required");
-        this.SnackbarValue = true;
       }
       if (!this.SignUp.confirmPassword) {
         this.Register.errors.push("Confirm Password is Required");
-        this.SnackbarValue = true;
       }
       if (this.SignUp.confirmPassword != this.SignUp.password) {
         this.Register.errors.push("Password is not same!");
-        this.SnackbarValue = true;
       }
       if (
         this.SignUp.email &&
@@ -293,12 +268,14 @@ export default {
             localStorage.setItem("email", response.data.email);
             localStorage.setItem("id", response.data.id);
             this.$refs.formreset.reset();
+            eventBus.$emit('refresh')
             // this.$root.$refs.appvue.calling();
             this.modalclosed();
             // this.$router.go("|");
           })
           .catch((error) => {
             console.log("Error:::::::::::::", error);
+            this.signupLoader = false;
           });
       }
     },
@@ -326,17 +303,11 @@ export default {
             this.signupLoader = false;
             this.$refs.formreset.reset();
             this.modalclosed();
-            // this.$router.go("|");
-            this.SnackbarValue = true;
-            // this.succcesMessage.push("You are succesfully Login");
-            // this.succcesColor = "success";
             eventBus.$emit('refresh')
-            // this.$emit("reload");
           })
           .catch((error) => {
             console.log("Error:::::::::::::", error.response.data.detail);
             this.Apierrormessage = error.response.data.detail;
-            this.SnackbarValue = true;
             this.signupLoader = false;
           });
       }
@@ -344,12 +315,10 @@ export default {
       if (!this.LogIn.email) {
         console.log("Email is req");
         this.LogIn.error.push("Email is required");
-        this.SnackbarValue = true;
       }
       if (!this.LogIn.password) {
         console.log("Password is req");
         this.LogIn.error.push("Password is required");
-        this.SnackbarValue = true;
       }
     },
     modalclosed() {
@@ -365,7 +334,6 @@ export default {
       showPassword: false,
       showPassword2: false,
       showPassword3: false,
-      SnackbarValue: false,
       signupLoader: false,
       Apierrormessage: null,
       succcesColor: "",
@@ -373,18 +341,14 @@ export default {
       firstname: "",
       nameRules: [
         (v) => !!v || "Name is required",
-        (v) => v.length <= 10 || "Name must be less than 10 characters",
+        // (v) => v.length <= 10 || "Name must be less than 10 characters",
       ],
       email: "",
       emailRules: [
         (v) => !!v || "E-mail is required",
         (v) => /.+@.+/.test(v) || "E-mail must be valid",
       ],
-      // password: "",
-      // passwordRules: [
-      //   // (v) => !!v || " is required",
-      //   (v) => v.length >= 6 || "Password must be at least 6 letters.",
-      // ],
+
       succcesMessage: [],
       error: [],
 

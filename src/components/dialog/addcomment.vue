@@ -91,10 +91,10 @@ export default {
 
   methods: {
     modalclosed() {
-      setTimeout(() => {
+      // setTimeout(() => {
         this.CreatePost.bodypost = "";
         this.CreatePost.id = null;
-      }, 100);
+      // }, 100);
       this.$emit("changevalue", false);
     },
 
@@ -103,8 +103,8 @@ export default {
         description: this.CreatePost.bodypost,
       };
       if (!this.CreatePost.id) {
-        this.Loader = true;
-
+       
+       this.Loader = true;
         Vue.axios
           .post(
             API_BASE + "blogs/" + this.$route.params.id + "/comments/",
@@ -115,10 +115,10 @@ export default {
               },
             }
           )
-          .then((response) => {
-            console.log("succes", response.data);
+          .then(() => {
+            // console.log("succes", response.data);
             this.Loader = false;
-            eventBus.$emit("refreshList");
+            eventBus.$emit("refreshCommentList");
             this.modalclosed();
           })
           .catch((error) => {
@@ -138,8 +138,9 @@ export default {
           .then((response) => {
             console.log("succes", response.data);
             this.Loader = false;
-            eventBus.$emit("refreshList");
             this.modalclosed();
+            eventBus.$emit("refreshCommentList");
+
           })
           .catch((error) => {
             console.log("Error:::::::::::::", error);

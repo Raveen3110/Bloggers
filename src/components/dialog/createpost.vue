@@ -60,7 +60,7 @@
                   elevation="8"
                   type="submit"
                 >
-                  Updated
+                  Update
                   <v-progress-circular
                     v-if="signupLoader"
                     indeterminate
@@ -91,27 +91,16 @@ export default {
   props: {
     dialog: Boolean,
   },
-  mounted() {
-    eventBus.$on("refreshForToken", () => {
-      this.getToken();
-    });
-  },
+
   methods: {
-    getToken() {
-      this.token = localStorage.getItem("access");
-    },
     modalclosed() {
-      setTimeout(() => {
-        console.log("null valuee");
         this.CreatePost.title = "";
         this.CreatePost.bodypost = "";
         this.CreatePost.id = null;
-      }, 500);
       this.$emit("changevalue", false);
       this.signIn = false;
     },
     postSubmit() {
-      // const headers = {};
       const body = {
         title: this.CreatePost.title,
         description: this.CreatePost.bodypost,
@@ -122,24 +111,18 @@ export default {
         this.CreatePost.id == null
       ) {
         this.signupLoader = true;
-        // console.log("Api calling::::::::::header", headers);
         Vue.axios
           .post(API_BASE + "blogs/", body, {
-            headers: { Authorization: `Bearer ${this.token}` },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access")}`,
+            },
           })
-          .then((response) => {
-            console.log("succes", response.data);
-            // this.$refs.formreset.reset();
+          .then(() => {
             this.signupLoader = false;
-            eventBus.$emit("refreshList");
             this.modalclosed();
-            // setTimeout(() => {
-            // this.title = null;
-            // this.bodypost = null;
-            // }, 500);
+            eventBus.$emit("refreshList");
           })
-          .catch((error) => {
-            console.log("Error:::::::::::::", error.response.data.detail);
+          .catch(() => {
             this.signupLoader = false;
           });
       }
@@ -153,19 +136,20 @@ export default {
       // Updating APIs
       if (this.CreatePost.id !== null) {
         this.signupLoader = true;
-        console.log("updatinggg idd---",this.CreatePost.id);
+        // console.log("updatinggg idd---", this.CreatePost.id);
         Vue.axios
           .put(API_BASE + "blogs/" + this.CreatePost.id, body, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("access")}` },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access")}`,
+            },
           })
-          .then((response) => {
-            console.log("Updatedddddd:::::", response);
+          .then(() => {
             this.signupLoader = false;
-            eventBus.$emit("refreshList");
             this.modalclosed();
+            eventBus.$emit("refreshDetails");
           })
-          .catch((error) => {
-            console.log("Error:::::::::::::", error);
+          .catch(() => {
+            // console.log("Error:::::::::::::", error);
             this.signupLoader = false;
           });
       }
@@ -184,7 +168,7 @@ export default {
       },
       titleRules: [
         (v) => !!v || "Title is required",
-        (v) => v.length >= 10 || "Title must be more than 10 characters",
+        // (v) => v.length >= 10 || "Title must be more than 10 characters",
       ],
     };
   },

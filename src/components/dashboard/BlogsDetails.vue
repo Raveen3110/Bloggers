@@ -1,5 +1,13 @@
 <template>
   <div class="white--text">
+    <div v-if="loader">
+      <v-img
+        class="loading"
+        src="@/assets/load.gif"
+        height="70px"
+        width="70px"
+      />
+    </div>
     <div class="blog-head">
       Posted By :{{ blogsView.posted_by_details.name }}
 
@@ -18,8 +26,11 @@
         {{ blogsView.title }}
         <v-spacer />
         <v-icon
-         v-if="blogsId == LogUserId"
-         @click="EditPost(blogsView.title,blogsView.description)" class="icons" color="white" size="22"
+          v-if="blogsId == LogUserId"
+          @click="EditPost(blogsView.title, blogsView.description)"
+          class="icons"
+          color="white"
+          size="22"
           >mdi-pencil</v-icon
         >
       </div>
@@ -43,7 +54,14 @@
       v-on:changevalue="valueCreateUpdate($event)"
       ref="commentsRef"
     />
-
+    <div v-if="loaderCommnets">
+      <v-img
+        class="loading"
+        src="@/assets/load.gif"
+        height="50px"
+        width="50px"
+      />
+    </div>
     <v-card
       v-for="item in CommentsByUser"
       :key="item.id"
@@ -54,21 +72,20 @@
         <v-spacer />
         <span v-if="item.posted_by_details.id == LogUserId">
           <v-icon
-            @click="EditComment(item.description , item.id)"
+            @click="EditComment(item.description, item.id)"
             class="icons"
             color="white"
             size="22"
             >mdi-pencil</v-icon
           >
           &nbsp;&nbsp;
-         <v-icon
+          <v-icon
             @click="Deletecomment(item.id)"
             class="icons"
             color="white"
             size="24"
             >mdi-window-close</v-icon
           >
-         
         </span>
       </div>
 
@@ -80,7 +97,7 @@
     </v-card>
 
     <!-- Footer Start-->
-    <v-footer class="mt-6" dark padless>
+    <v-footer class="mt-6 footer" dark padless>
       <v-card class="flex" flat tile>
         <v-card-text class="py-2 white--text text-center">
           <v-icon class="icons">mdi-linkedin</v-icon> &nbsp;
@@ -115,22 +132,25 @@ export default {
       CheckLog: "",
       CommentsByUser: [],
       username: localStorage.getItem("name"),
-      commentData:"",
-      token: localStorage.getItem("access"),
+      commentData: "",
+      loader: false,
+      loaderCommnets: false,
     };
   },
   created() {
     this.Details();
-    this.Addcomment();
+    this.CommentGet();
 
-    eventBus.$on("refreshList", () => {
-      this.Addcomment();
-      this.Details()
+    eventBus.$on("refreshDetails", () => {
+      this.Details();
     });
     eventBus.$on("refresh", () => {
       this.CheckedLogIn();
       this.CheckedUserID();
-      this.getToken();
+    });
+
+    eventBus.$on("refreshCommentList", () => {
+      this.CommentGet();
     });
   },
 
@@ -141,47 +161,48 @@ export default {
     CheckedUserID() {
       this.LogUserId = localStorage.getItem("id");
     },
-    getToken(){
-      this.token= localStorage.getItem("access");
-    },
+
     valueCreateUpdate(e) {
       this.dialogValueCreate = e;
     },
     Details() {
+      this.loader = true;
       Vue.axios
         .get(API_BASE + "blogs/" + this.$route.params.id)
         .then((response) => {
-          // console.log("Blogss Detailsss", response.data.posted_by_details.id);
           this.blogsView = response.data;
           this.blogsId = response.data.posted_by_details.id;
+          this.loader = false;
         })
         .catch((error) => {
           console.log("Error:::::::::::::", error);
+          this.loader = false;
         });
     },
-    Addcomment() {
+    CommentGet() {
+      this.loaderCommnets = true;
       Vue.axios
         .get(
           API_BASE + "blogs/" + this.$route.params.id + "/comments/?page=" + 1
         )
         .then((response) => {
-          // console.log("Commentssss", response.data.results);
           this.CommentsByUser = response.data.results;
-          // eventBus.$emit('refresh')
           this.modalclosed();
+          this.loaderCommnets = false;
         })
         .catch((error) => {
           console.log("Error:::::::::::::", error);
+          this.loaderCommnets = false;
         });
     },
     DeletePost() {
-      console.log("Dekete Api")
       Vue.axios
         .delete(API_BASE + "blogs/" + this.$route.params.id, {
-          headers: { Authorization: `Bearer ${this.token}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access")}`,
+          },
         })
-        .then((response) => {
-          console.log("deleteeee:::::", response.status);
+        .then(() => {
           this.$router.push({ name: "Home" });
         })
         .catch((error) => {
@@ -189,33 +210,28 @@ export default {
         });
     },
 
-    EditPost(title,desc) {
-       eventBus.$emit('openDialogBox',title,desc)
-       eventBus.$emit('refreshForToken')
-       console.log("titlee",title)
-       console.log("descriptionn",desc)
-     
+    EditPost(title, desc) {
+      eventBus.$emit("openDialogBox", title, desc);
     },
     Deletecomment(id) {
       Vue.axios
         .delete(API_BASE + "blogs/comment/" + id + "/", {
-          headers: { Authorization: `Bearer ${this.token}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access")}`,
+          },
         })
-        .then((response) => {
-          console.log("deleteeee:::::", response.status);
-          eventBus.$emit("refreshList");
+        .then(() => {
+          // console.log("deleteeee:::::", response.status);
+          eventBus.$emit("refreshCommentList");
         })
         .catch((error) => {
           console.log("Error:::::::::::::", error);
         });
     },
-    EditComment(desc,id) {
-      console.log("Commentss Description", desc); 
-      console.log("Commentss current ", id); 
-
+    EditComment(desc, id) {
       this.dialogValueCreate = true;
-      this.$refs.commentsRef.CreatePost.bodypost=desc;
-      this.$refs.commentsRef.CreatePost.id=id;
+      this.$refs.commentsRef.CreatePost.bodypost = desc;
+      this.$refs.commentsRef.CreatePost.id = id;
 
       // this.$refs.commentsRef.CreatePost.bodypost=desc;
     },
@@ -223,9 +239,18 @@ export default {
 };
 </script>
 <style scoped>
+.footer{
+  /* min: 100vh; */
+    /* background-color: #F3F3F3; */
+    /* padding-top: 10px; */
+    padding-bottom: 0px;
+}
 .icons {
   cursor: pointer;
   font-size: 30px;
+}
+.loading {
+  margin: auto !important;
 }
 .btn-style {
   color: white !important;

@@ -29,7 +29,6 @@ export default {
   mounted() {
     Vue.axios.get("https://jsonplaceholder.typicode.com/posts").then((resp) => {
       this.Apidata = resp.data;
-      console.log("Data", resp.data);
     });
   },
 };

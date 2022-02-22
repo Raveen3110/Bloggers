@@ -1,18 +1,20 @@
 <template>
   <div>
-    <div v-if="!loader" class="loader"
-    >
-      <!-- Loaderrr -->
-      <!-- <img src=""/> -->
-      <!-- <v-img src="@/assets/loader.gif" height="100px" width="200px" /> -->
+    <div v-if="loader">
+      <v-img
+        class="loading"
+        src="@/assets/load.gif"
+        height="70px"
+        width="70px"
+      />
     </div>
     <v-card
-      v-for="item in blogsData"
+      v-for="item in blogDataShrink"
       :key="item.id"
       class="blogs grey darken-1 white--text"
     >
       <h2 class="contain-head">{{ item.title }}</h2>
-      <div v-html="item.description.substring(0, 800)"></div>
+      <div v-html="item.description.substring(0, 200) + `...`"></div>
       <!-- <div class="blog-contain">
         {{ item.description.substring(0, 400) }}...{{ " " }}
       </div> -->
@@ -44,27 +46,43 @@ export default {
     return {
       blogsData: [],
       blogsDetails: [],
+      blogDataShrink: [],
       loader: false,
     };
   },
 
-  created() {
-    this.Blogs();
-  },
+  // created() {
+  //   this.Blogs();
+  // },
 
   mounted() {
+    this.Blogs();
     eventBus.$on("refreshList", () => {
       this.Blogs();
     });
   },
 
+  // computed: {
+  //   blogsData1() {
+  //     const blogsData1 = this.blogDataShrink.map((post) => {
+  //       if (post.description && post.description.length > 50)
+  //         post.description = post.description.substring(0, 50) + "...";
+  //       console.log("asdcf", post);
+  //       return post;
+  //     });
+
+  //     return blogsData1;
+  //   },
+  // },
   methods: {
     Blogs() {
       this.loader = true;
       Vue.axios
         .get(API_BASE + "/blogs/?page=1")
         .then((response) => {
-          this.blogsData = response.data.results;
+          this.blogDataShrink = response.data.results;
+          // this.blogsData = response.data.results;
+
           this.loader = false;
         })
         .catch((error) => {
@@ -79,7 +97,9 @@ export default {
 };
 </script>
 <style scoped>
-
+.loading {
+  margin: auto !important;
+}
 /* Desktop screen */
 @media screen and (min-width: 600px) {
   .blogs {
