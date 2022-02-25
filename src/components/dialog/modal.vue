@@ -35,7 +35,7 @@
               <span style="color: red; font-size: 16px"
                 >Please check the following errors</span
               >
-          
+
               <ul>
                 <li
                   style="color: red; font-size: 14px"
@@ -113,7 +113,7 @@
               <span style="color: red; font-size: 16px"
                 >Please check the following errors</span
               >
-            
+
               <ul>
                 <li
                   style="color: red; font-size: 14px"
@@ -206,7 +206,6 @@
         </v-form>
         <!------------- SignIn Form End--------------->
       </v-card>
-    
     </v-dialog>
   </div>
 </template>
@@ -216,7 +215,7 @@ import Vue from "vue";
 import VueAxios from "vue-axios";
 import axios from "axios";
 import API_BASE from "../../config/api";
-import { eventBus } from '../../main';
+import { eventBus } from "../../main";
 Vue.use(VueAxios, axios);
 
 export default {
@@ -261,14 +260,13 @@ export default {
           .then((response) => {
             console.log("succes::::::::::", response);
             this.signupLoader = false;
-
             localStorage.setItem("access", response.data.token.access);
             localStorage.setItem("name", response.data.name);
             // this.LogInUsername=response.data.name
             localStorage.setItem("email", response.data.email);
             localStorage.setItem("id", response.data.id);
             this.$refs.formreset.reset();
-            eventBus.$emit('refresh')
+            eventBus.$emit("refresh");
             // this.$root.$refs.appvue.calling();
             this.modalclosed();
             // this.$router.go("|");
@@ -290,6 +288,8 @@ export default {
       };
       if (this.LogIn.email && this.LogIn.password) {
         // console.log("No Error and APIs Call here");
+        // eventBus.$emit("SuccessLogin");
+
         this.signupLoader = true;
         Vue.axios
           .post(API_BASE + "authentication/validate/", body)
@@ -303,7 +303,7 @@ export default {
             this.signupLoader = false;
             this.$refs.formreset.reset();
             this.modalclosed();
-            eventBus.$emit('refresh')
+            eventBus.$emit("refresh");
           })
           .catch((error) => {
             console.log("Error:::::::::::::", error.response.data.detail);

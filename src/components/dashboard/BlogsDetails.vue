@@ -126,12 +126,12 @@ export default {
   data() {
     return {
       blogsId: "",
-      LogUserId: localStorage.getItem("id"),
-      blogsView: [],
+      LogUserId: "",
+      blogsView: {},
       dialogValueCreate: false,
       CheckLog: "",
       CommentsByUser: [],
-      username: localStorage.getItem("name"),
+      username: "",
       commentData: "",
       loader: false,
       loaderCommnets: false,
@@ -152,6 +152,9 @@ export default {
     eventBus.$on("refreshCommentList", () => {
       this.CommentGet();
     });
+
+    this.username = localStorage.getItem("name")
+    this.blogsId = localStorage.getItem("id")
   },
 
   methods: {
@@ -235,6 +238,11 @@ export default {
 
       // this.$refs.commentsRef.CreatePost.bodypost=desc;
     },
+    // github(){
+    //         // this.$router.go("https://github.com/Raveen3110/Bloggers.git");
+    //         window.open("https://github.com/Raveen3110/Bloggers.git")
+      
+    // }
   },
 };
 </script>

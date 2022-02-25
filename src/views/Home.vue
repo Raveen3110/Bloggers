@@ -15,3 +15,8 @@ export default {
   },
 };
 </script>
+<style>
+* {
+  font-family: "Baloo Bhai\ 2", cursive;
+}
+</style>

@@ -10,12 +10,20 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    meta : {
+      requiresAuth : false,
+      title : 'Home | Blog Project'
+  }
   },
   {
     path: '/details/:id',
     name: 'BlogsDetails',
-    component: BlogsDetails
+    component: BlogsDetails,
+    meta : {
+      requiresAuth : false,
+      title : 'Details | Blog Project'
+  }
 
   }
 ]

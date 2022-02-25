@@ -145,9 +145,7 @@ export default {
 };
 </script>
 <style scoped>
-* {
-  font-family: "Baloo Bhai\ 2", cursive;
-}
+
 .fixed-bar {
   position: sticky;
   position: -webkit-sticky; /* for Safari */

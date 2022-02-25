@@ -13,8 +13,10 @@
       :key="item.id"
       class="blogs grey darken-1 white--text"
     >
+    <snackbar/>
+
       <h2 class="contain-head">{{ item.title }}</h2>
-      <div v-html="item.description.substring(0, 200) + `...`"></div>
+      <div v-html="item.description.substring(0, 200)"></div>
       <!-- <div class="blog-contain">
         {{ item.description.substring(0, 400) }}...{{ " " }}
       </div> -->
@@ -38,9 +40,11 @@ import VueAxios from "vue-axios";
 import axios from "axios";
 import API_BASE from "../../config/api";
 import { eventBus } from "../../main";
+import Snackbar from '../../helper/Snackbar.vue';
 Vue.use(VueAxios, axios);
 
 export default {
+  components: { Snackbar },
   name: "Blogs",
   data() {
     return {
@@ -48,6 +52,7 @@ export default {
       blogsDetails: [],
       blogDataShrink: [],
       loader: false,
+      pageNo:1
     };
   },
 
@@ -70,7 +75,6 @@ export default {
   //       console.log("asdcf", post);
   //       return post;
   //     });
-
   //     return blogsData1;
   //   },
   // },
@@ -78,7 +82,7 @@ export default {
     Blogs() {
       this.loader = true;
       Vue.axios
-        .get(API_BASE + "/blogs/?page=1")
+        .get(API_BASE + "/blogs/?page="+ this.pageNo + "&records_per_page=15")
         .then((response) => {
           this.blogDataShrink = response.data.results;
           // this.blogsData = response.data.results;
