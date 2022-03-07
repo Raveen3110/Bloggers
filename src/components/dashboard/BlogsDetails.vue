@@ -126,7 +126,7 @@ export default {
   data() {
     return {
       blogsId: "",
-      LogUserId: "",
+      LogUserId: localStorage.getItem("id"),
       blogsView: {},
       dialogValueCreate: false,
       CheckLog: "",
@@ -154,7 +154,7 @@ export default {
     });
 
     this.username = localStorage.getItem("name")
-    this.blogsId = localStorage.getItem("id")
+    // this.blogsId = localStorage.getItem("id")
   },
 
   methods: {
@@ -175,6 +175,7 @@ export default {
         .then((response) => {
           this.blogsView = response.data;
           this.blogsId = response.data.posted_by_details.id;
+          console.log("Blogss Created USerr Id::",response.data.posted_by_details.id)
           this.loader = false;
         })
         .catch((error) => {
